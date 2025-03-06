@@ -4,6 +4,16 @@ import dotenv from "dotenv";
 
 dotenv.config(); 
 
+const apiKey1 = process.env.GOOGLE_API_KEY1;
+const cx1 = process.env.cx1;
+
+const apiKey2 = process.env.GOOGLE_API_KEY3;
+const cx2 = process.env.cx2;
+
+const apiKey_yt = process.env.GOOGLE_API_KEY4;
+
+    
+
 export async function fetchSearchResults(query, page) {
 
     const searchQuery = query.trim()
@@ -43,10 +53,7 @@ export async function fetchGoogleResults(query, page) {
 
     const startIndex = (page - 1) * 10 + 1
 
-    
-    const apiKey = process.config.GOOGLE_API_KEY1 ;
-    const cx = process.config.cx1;
-    const url = `https://www.googleapis.com/customsearch/v1?q=${query}&key=${apiKey}&cx=${cx}&start=${startIndex}&num=10`;
+    const url = `https://www.googleapis.com/customsearch/v1?q=${query}&key=${apiKey1}&cx=${cx1}&start=${startIndex}&num=10`;
   
     try {
         const response = await axios.get(url);
@@ -62,8 +69,7 @@ export async function fetchGoogleResults(query, page) {
 async function fetchYouTubeResults(query, page) {
     
     const startIndex = (page - 1) * 10 + 1
-    const apiKey = process.config.GOOGLE_API_KEY4;
-    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&key=${apiKey}&start-index=${startIndex}&max-results=10`;
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&key=${apiKey_yt}&start-index=${startIndex}&max-results=10`;
 
     try {
       const response = await axios.get(url);
@@ -77,9 +83,8 @@ async function fetchYouTubeResults(query, page) {
 async function fetchLinkedInResults(query, page) {
 
     const startIndex = (page - 1) * 10 + 1;
-    const apiKey = process.config.GOOGLE_API_KEY3;
-    const cx = process.config.cx2 ;
-    const url = `https://www.googleapis.com/customsearch/v1?q=site:linkedin.com ${query}&key=${apiKey}&cx=${cx}&start=${startIndex}&num=10`;
+    
+    const url = `https://www.googleapis.com/customsearch/v1?q=site:linkedin.com ${query}&key=${apiKey2}&cx=${cx2}&start=${startIndex}&num=10`;
 
 
     try {
@@ -112,13 +117,13 @@ const formatResults = (results) => {
                 image: item.snippet.thumbnails.high.url
             })) : [],
 
-            linkedin: results[2].status === "fulfilled" ? results[2].value.items.map(item => ({
+            linkedin: results[2].status === "fulfilled" ? results[2]?.value?.items?.map(item => ({
                 type: "linkedin",
                 tite: item.title,
                 link: item.link,
                 displayLink: item.displayLink,
                 snippet: item.snippet,
-                image: item.pagemap?.cse_thumbnail?.[0]?.src || data.pagemap?.cse_image?.[0]?.src
+                image: item.pagemap?.cse_thumbnail?.[0]?.src || item.pagemap?.cse_image?.[0]?.src
             })) : []
         }
 }
@@ -126,15 +131,15 @@ const formatResults = (results) => {
 // Ranking based on keyword match and recency
 export function rankResults(results, keyword) {
     return results.map(result => {
-        let titleMatch = (result.title.match(new RegExp(keyword, 'gi')) || []).length * 2;
-        let snippetMatch = (result.snippet?.match(new RegExp(keyword, 'gi')) || []).length;
+        let titleMatch = (result?.title?.match(new RegExp(keyword, 'gi')) || []).length * 2;
+        let snippetMatch = (result?.snippet?.match(new RegExp(keyword, 'gi')) || []).length;
         
         let keywordScore = titleMatch + snippetMatch;
         
         // Assign recency score (for LinkedIn posts, YouTube videos if dates exist)
         let recencyScore = 0;
         if (result.date) {
-            const daysOld = (new Date() - new Date(result.date)) / (1000 * 60 * 60 * 24);
+            const daysOld = (new Date() - new Date(result?.date)) / (1000 * 60 * 60 * 24);
             recencyScore = Math.max(0, 100 - daysOld); // Recent content gets a higher score
         }
         
