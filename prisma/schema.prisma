@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model Results {
+  id       Int        @id @default(autoincrement())
+  query    String
+  linkedin Linkedin[]  @relation("ResultsLinkedin")
+  google   Google[]    @relation("ResultsGoogle")
+  youtube  Youtube[]   @relation("ResultsYoutube")
+}
+
+model Linkedin {
+  id       Int     @id @default(autoincrement())
+  title    String
+  type     String  @default("linkedin")
+  link     String
+  image    String?
+  snippet  String?
+
+  resultsId Int
+  results   Results @relation(fields: [resultsId], references: [id], name: "ResultsLinkedin")
+}
+
+model Youtube {
+  id       Int     @id @default(autoincrement())
+  title    String
+  type     String  @default("youtube")
+  videoId  String?
+  link     String
+  image    String?
+  snippet  String?
+
+  resultsId Int
+  results   Results @relation(fields: [resultsId], references: [id], name: "ResultsYoutube")
+}
+
+model Google {
+  id       Int     @id @default(autoincrement())
+  title    String
+  type     String  @default("google")
+  link     String
+  snippet  String?
+
+  resultsId Int
+  results   Results @relation(fields: [resultsId], references: [id], name: "ResultsGoogle")
+}
